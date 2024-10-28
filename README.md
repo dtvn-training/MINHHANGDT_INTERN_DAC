@@ -1,4 +1,5 @@
-This repo includes:
+This repo includes:  
+
 **Week3:**
 + SQLAlchemy (ORM, Domain Model, SQLAlchemy Core, Schema-Centric Model)
 + Linus (Basic command, SSH, SCP, RSYNC)

@@ -112,6 +112,72 @@ class IosDataCollector:
     def __init__(self):
         self.ios_apps = []
 
+    def collect_ios_data(self, df_ids):
+        """
+        Crawl app data from Google Play Store base on app_ids
+        """
+        for index, row in df_ids.iterrows():
+            url = row['link']
+            resp = requests.get(url)
+            bs_soup = BeautifulSoup(resp.text, 'html.parser')
+
+            secs_list = bs_soup.find_all('section', class_='l-content-width section section--bordered')
+
+            secs_des = secs_list[1]
+            description = secs_des.find('p').get_text()
+            
+            if len(secs_list) >= 3:
+                try:
+                    secs = secs_list[2]
+                    score = secs.find('div', class_='we-customer-ratings lockup').find(
+                        'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
+                    ).find('div', class_='we-customer-ratings__averages').find('span').get_text()
+
+                    cnt_rates = Integer(secs.find('div', class_='we-customer-ratings lockup').find(
+                        'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
+                    ).find('div', class_='we-customer-ratings__count small-hide medium-show').get_text(strip=True).split()[0])
+                    
+                except:
+                    score = 0
+                    cnt_rates = 0
+            else:
+                score = 0
+                cnt_rates = 0
+
+            cater_ls = bs_soup.find_all('section', class_='l-content-width section section--bordered section--information')
+
+            cate = cater_ls[0]
+            siz = cate.find('div', class_="information-list__item l-column small-12 medium-6 large-4 small-valign-top").find(
+                'dd', class_="information-list__item__definition"
+            ).get_text()
+
+            category = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
+                'dd', class_="information-list__item__definition"
+            )[2].get_text()
+
+            provider = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
+            'dd', class_="information-list__item__definition"
+            )[0].get_text()
+
+            ios_app = IosApp(
+                    app_id=row['rank'],
+                    app_name=row['title'],
+                    category=category,
+                    price = 0.0,
+                    provider = provider,
+                    description=description,
+                    score = score,
+                    cnt_rates = cnt_rates,
+                    subtitle = row['subtitle'],
+                    link = row['link'],
+                    img_links = ','.join(row['img_links'])
+                )
+            
+            self.ios_apps.append(ios_app)
+
+    def get_collected_ios_apps(self):
+        return self.ios_apps
+
 class DataStore:
     """Data Store class"""
     def __init__(self):

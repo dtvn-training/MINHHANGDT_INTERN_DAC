@@ -180,9 +180,68 @@ class IosDataCollector:
 
 class DataStore:
     """Data Store class"""
-    def __init__(self):
-        return
     
+    def __init__(self):
+        # connect with database MySQL
+
+        mysql_username = 'root'
+        mysql_password = 'HIn-129cpdatadac'
+        mysql_host = '127.0.0.1:3306'
+        mysql_database = 'crawl_data'
+
+        self.engine = create_engine(f'mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_host}/{mysql_database}')
+        Base.metadata.create_all(self.engine)
+
+    def make_app(self,data, op_sys):
+        if(op_sys == 'ios'):
+            app_ = IosApp(
+                            app_id=data["app_id"],
+                            app_name=data["app_name"],
+                            category=data["category"],
+                            price = 0.0,
+                            provider = data["provider"],
+                            description=data["description"],
+                            score = data["score"],
+                            cnt_rates = data["cnt_rates"],
+                            subtitle = data["subtitle"],
+                            link = data["link"],
+                            img_links = ','.join(data["img_links"])  
+                        )
+            return app_
+        
+        app_ = AndroidApp(
+                            app_id=data['app_id'],
+                            app_name=data['app_name'],
+                            category=data['category'],
+                            price=data['price'],
+                            provider=data['provider'],
+                            description=data['description'],
+                            developer_email=data['developer_email'],
+                        )
+        
+        return app_
+
+
+    def insert_values(self, data_list, op_sys):
+        with Session(self.engine) as session:
+            try:
+                
+                for data in data_list:
+                    try:
+                        app_entry = self.make_app(data, op_sys)
+                        session.add(app_entry)  
+                        session.commit()  
+
+                    except Exception as e:
+                        session.rollback()  
+                        print(f"Error inserting individual value: {data['app_id']} - {e}")
+            
+            except Exception as e:
+                print(f"General error while processing data_list: {e}")
+
+            finally:
+                session.close()
+
 def list_to_string(data):
     """turn list into list"""
     if isinstance(data, list):

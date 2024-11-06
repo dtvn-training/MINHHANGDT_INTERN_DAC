@@ -303,7 +303,6 @@ def find_df_ios_app(url):
     soup = BeautifulSoup(response.text, 'html.parser')
 
     top_list = soup.find('ol', role='feed')
-    print(top_list)
 
     df = pd.DataFrame(columns=['rank', 'title', 'subtitle', 'link', 'img_links'])
     apps_data = top_list.find_all('li')
@@ -398,10 +397,45 @@ def main_android():
 
 def crawl_ios(url):
     """crawl ios apps"""
-    return
+    
+    #crawl data android app from google play store
+    collector = IosDataCollector()
+    ios_df = find_df_ios_app(url)
+
+    collector.collect_ios_data(ios_df)
+    collected_ios_apps = collector.get_collected_ios_apps()
+    
+    data_to_store = [{
+        "app_id": app.app_id,
+        "app_name": app.app_name,
+        "category": app.category,
+        "price": app.price,
+        "provider": app.provider,
+        "description": app.description,
+        "score": app.score,
+        "cnt_rates": app.cnt_rates,
+        "subtitle": app.subtitle,
+        "link": app.link,
+        "img_links": app.img_links,
+    } for app in collected_ios_apps]
+
+    # Save data to database
+    try:
+        store = DataStore()
+        store.insert_values(data_to_store, 'ios')
+
+    except Exception as e:  # Catch all exceptions
+        print(f"An error occurred: {e}")  # Log the error message
+        return data_to_store  # Return the problematic data for further investigation
 
 def main_ios():
-    return
+    url_top_free = 'https://apps.apple.com/vn/charts/iphone/top-free-apps/36'
+    url_top_paid = 'https://apps.apple.com/vn/charts/iphone/top-paid-apps/36'
+
+    crawl_ios(url_top_free) #top free
+    print("done ios top free")
+    crawl_ios(url_top_paid) #top paid
+    print("done ios top paid")
 
 if __name__ == "__main__":
     main_android()

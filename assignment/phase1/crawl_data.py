@@ -119,15 +119,57 @@ class DataStore:
     
 def list_to_string(data):
     """turn list into list"""
-    return
+    if isinstance(data, list):
+        return ' '.join(map(list_to_string, data))  # deque turn element to string
+    elif isinstance(data, dict):
+        return str(data)  # dictionary to string
+    else:
+        return str(data)  # other element to string
 
 def extract_quoted_strings(data):
     """extract string inside quote sign"""
-    return
+
+    # Regular expression finds all strings within double quotes
+    quoted_strings = re.findall(r'"com(.*?)"', data)
+    return quoted_strings
 
 def find_list_android_app_ids(language, country, length, chart_name, category_id):
     """find list of android_app's id"""
-    return
+
+    url = f'https://play.google.com/_/PlayStoreUi/data/batchexecute?hl={language}&gl={country}'
+
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+    }
+
+    # Prepare the body similar to the f.req structure in the original request
+    body = {
+        'f.req': json.dumps([
+            [
+                [
+                    'vyAe2',
+                    json.dumps([[None, [[None, [None, length]], None, None, [113]], [2, chart_name, category_id]]])
+                ]
+            ]
+        ])
+    }
+
+    response = requests.post(url, headers=headers, data=body)
+    response_text = response.text
+    if response_text.startswith(")]}'"):
+        response_text = response_text[4:]
+
+    # Now try to load the cleaned string
+    try:
+        json_str = json.loads(response_text)
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+
+    string_result = list_to_string(json_str)
+    quoted_strings = extract_quoted_strings(string_result)
+    app_strings = ['com' + link for link in quoted_strings]
+
+    return app_strings
 
 def find_df_ios_app(url):
     """find list of ios_app contain rank, title, subtitle, link, img_links"""

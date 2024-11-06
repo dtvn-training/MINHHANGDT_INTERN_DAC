@@ -173,7 +173,54 @@ def find_list_android_app_ids(language, country, length, chart_name, category_id
 
 def find_df_ios_app(url):
     """find list of ios_app contain rank, title, subtitle, link, img_links"""
-    return
+
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    top_list = soup.find('ol', role='feed')
+    print(top_list)
+
+    df = pd.DataFrame(columns=['rank', 'title', 'subtitle', 'link', 'img_links'])
+    apps_data = top_list.find_all('li')
+
+    for app_data in apps_data:  
+        link_tag = app_data.find('a')
+        
+        # if 'a' tag was founded
+        if link_tag:  
+            link = link_tag.get('href')
+            
+            # get images lnk
+            images = app_data.find('div').find('picture').find_all('source')
+            image_link = [img.get('srcset') for img in images]
+
+            # get rank
+            rank = link_tag.find('p', class_='we-lockup__rank').get_text()
+            
+            # get title
+            title = link_tag.find('div', class_='we-lockup__text').find('div', class_='we-lockup__title').find(
+                'div',  class_='we-truncate we-truncate--multi-line targeted-link__target'
+            ).find('p').get_text()
+            
+            # get subtitle
+            sub_title = link_tag.find('div', class_='we-lockup__text').find('div', class_='we-truncate we-truncate--single-line we-lockup__subtitle').get_text()
+
+            # add data into DataFrame
+            temp_df = pd.DataFrame({
+                'rank': [rank],
+                'title': [title],
+                'subtitle': [sub_title],
+                'link': [link],
+                'img_links': [image_link]
+            })
+            
+            # combine to main data frame
+            df = pd.concat([df, temp_df], ignore_index=True)
+        else:
+            print("Không tìm thấy thẻ <a> với class 'we-lockup  targeted-link'")
+
+    return df
+    
 
 def crawl_android(language, country, chart_name, category_id):
     """crawl android apps"""

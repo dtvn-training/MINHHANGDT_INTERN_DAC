@@ -185,7 +185,7 @@ class DataStore:
         # connect with database MySQL
 
         mysql_username = 'root'
-        mysql_password = 'HIn-129cpdatadac'
+        mysql_password = ''
         mysql_host = '127.0.0.1:3306'
         mysql_database = 'crawl_data'
 
@@ -349,11 +349,52 @@ def find_df_ios_app(url):
 
 def crawl_android(language, country, chart_name, category_id):
     """crawl android apps"""
-    return
+
+    #crawl data android app from google play store
+    collector = AndroidDataCollector()
+
+    length = 100
+
+    android_app_ids = find_list_android_app_ids(language, country, length, chart_name, category_id)
+
+    collector.collect_android_data(android_app_ids)
+    collected_android_apps = collector.get_collected_android_apps()
+
+    #store data
+
+    data_to_store = [{
+        "app_id": app.app_id,
+        "app_name": app.app_name,
+        "category": app.category,
+        "price": app.price,
+        "provider": app.provider,
+        "description": app.description,
+        "developer_email": app.developer_email,
+    } for app in collected_android_apps]
+
+    
+    # Save data to database
+    try:
+        for data in data_to_store:
+            # Check if app_id is not a string
+            if not isinstance(data['app_id'], str):  # Use isinstance for type checking
+                raise ValueError(f"Invalid type for app_id: {data['app_id']} (type: {type(data['app_id'])})")
+    
+        # Insert values into the database
+        store = DataStore()
+        store.insert_values(data_to_store, 'android')
+
+    except Exception as e:  # Catch all exceptions
+        print(f"An error occurred: {e}")  # Log the error message
+        return data_to_store  # Return the problematic data for further investigation
 
 def main_android():
-    
-    return
+    crawl_android('en', 'vn', 'topselling_free', 'APPLICATION') #top free
+    print("done top free")
+    crawl_android('en', 'vn', 'topgrossing', 'APPLICATION') #top grossing
+    print("done top grossing")
+    crawl_android('en', 'vn', 'topselling_paid', 'APPLICATION') #topselling_paid
+    print("done top paid")
 
 def crawl_ios(url):
     """crawl ios apps"""

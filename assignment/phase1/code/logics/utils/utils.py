@@ -37,7 +37,7 @@ def find_list_android_app_ids(language, country, length, chart_name, category_id
             [
                 [
                     'vyAe2',
-                    json.dumps([[None, [[None, [None, length]], None, None, [113]], [2, chart_name, category_id]]])
+                    json.dumps([[None, [[None, [None, length + 50]], None, None, [113]], [2, chart_name, category_id]]])
                 ]
             ]
         ])
@@ -58,7 +58,9 @@ def find_list_android_app_ids(language, country, length, chart_name, category_id
     quoted_strings = extract_quoted_strings(string_result)
     app_strings = ['com' + link for link in quoted_strings]
 
-    return app_strings
+    app_strings_return = app_strings[:length]
+
+    return app_strings_return
 
 def find_df_ios_app(url):
     """find list of ios_app contain rank, title, subtitle, link, img_links"""

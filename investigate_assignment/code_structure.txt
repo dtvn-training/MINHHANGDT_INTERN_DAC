@@ -1,0 +1,28 @@
+    └───code
+        │   main.py
+        │
+        └───logics
+            │   database.py
+            │   __init__.py
+            │
+            ├───collectors
+            │       android_data_collector.py
+            │       ios_data_collector.py
+            │       __init__.py
+            │
+            ├───models
+            │       android_app.py
+            │       app.py
+            │       ios_app.py
+            │       __init__.py
+            │
+            ├───services
+            │       android_service.py
+            │       app_service.py
+            │       data_store.py
+            │       ios_service.py
+            │
+            └───utils
+                    crawl_util.py
+                    utils.py
+                    __init__.py

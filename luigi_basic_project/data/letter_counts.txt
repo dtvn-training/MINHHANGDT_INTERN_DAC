@@ -1,0 +1,6 @@
+apple | 5
+banana | 6
+grapefruit | 10
+dragonfruit | 11
+potato | 6
+tomato | 6

@@ -12,3 +12,4 @@ class Actor(Base):
         self.name = name
         self.fullname = fullname
         self.body_count = body_count
+        

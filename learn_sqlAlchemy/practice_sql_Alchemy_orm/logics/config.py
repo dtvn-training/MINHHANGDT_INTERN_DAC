@@ -8,3 +8,4 @@ class Config:
 
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{mysql_username}:{mysql_password}@{mysql_host}/{mysql_database}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    

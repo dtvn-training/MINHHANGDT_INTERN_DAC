@@ -13,3 +13,4 @@ SessionLocal = sessionmaker(bind=engine)
 def init_db():
     """init database"""
     Base.metadata.create_all(bind=engine)
+    

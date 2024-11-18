@@ -1,5 +1,5 @@
-from logics.utils.crawl_util import main_android, main_ios
-from logics.database import init_db
+from process.logics.wrapper import main_android, main_ios
+from process.database.database import init_db
 
 def main():
     """Main function to start the crawlers for both Android and iOS apps."""

@@ -1,7 +1,8 @@
 # app/services/ios_service.py
 from ..models.ios_app import IosApp
 from .app_service import AppService
-from logics.database import SessionLocal
+from ..database.database import SessionLocal
+# from assignment.phase1.code.process.database.database import SessionLocal
 from sqlalchemy.orm import Session
 
 class IosService(AppService):

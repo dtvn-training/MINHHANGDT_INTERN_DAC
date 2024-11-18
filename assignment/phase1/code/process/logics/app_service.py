@@ -1,5 +1,5 @@
 # app/services/app_service.py
-from ..database import SessionLocal
+from ..database.database import SessionLocal
 from ..models.android_app import AndroidApp
 from ..models.ios_app import IosApp
 

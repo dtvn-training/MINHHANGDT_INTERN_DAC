@@ -8,7 +8,7 @@ class IosApp(AppData):
     app_name = Column(String(200))
     category = Column(String(100))
     price = Column(Float)
-    provider = Column(String(100))
+    provider = Column(String(1000))
     description = Column(Text)
     score = Column(Float)
     cnt_rates = Column(Integer)

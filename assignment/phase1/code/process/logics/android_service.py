@@ -1,7 +1,7 @@
 # app/services/android_service.py
 from ..models.android_app import AndroidApp
 from .app_service import AppService
-from logics.database import SessionLocal
+from ..database.database import SessionLocal
 from sqlalchemy.orm import Session
 
 class AndroidService(AppService):

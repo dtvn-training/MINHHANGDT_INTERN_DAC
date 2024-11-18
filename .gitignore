@@ -1,6 +1,5 @@
-/assignment/phase1/code/logics/config.py
-/assignment/phase1/code/logics/__pycache__/
-/assignment/phase1/code/logics/services/__pycache__/
-/assignment/phase1/code/logics/collectors/__pycache__/
-/assignment/phase1/code/logics/models/__pycache__/
-/assignment/phase1/code/logics/utils/__pycache__/
+/assignment/phase1/code/process/config/
+/assignment/phase1/code/process/__pycache__/
+/assignment/phase1/code/process/logics/__pycache__/
+/assignment/phase1/code/process/models/__pycache__/
+/assignment/phase1/code/process/database/__pycache__/

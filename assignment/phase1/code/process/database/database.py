@@ -4,7 +4,7 @@ and session management with SQLAlchemy."""
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from .config import Config
+from ..config.config import Config
 
 Base = declarative_base()
 engine = engine = create_engine(Config.SQLALCHEMY_DATABASE_URI)

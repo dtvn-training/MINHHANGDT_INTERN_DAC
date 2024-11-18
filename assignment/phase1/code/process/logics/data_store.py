@@ -1,9 +1,30 @@
-from logics.services.android_service import AndroidService
-from logics.services.ios_service import IosService
-from logics.models.android_app import AndroidApp
-from logics.models.ios_app import IosApp
-from ..utils.utils import clean_data
+from ..logics.android_service import AndroidService
+from ..logics.ios_service import IosService
+from process.models.android_app import AndroidApp
+from process.models.ios_app import IosApp
 from sqlalchemy.orm import Session
+
+def is_record_exists(session, app_id, op_sys):
+    """Check if the record already exists in the database."""
+    if op_sys == 'ios':
+        app = session.query(IosApp).filter(IosApp.app_id == app_id).first()
+    else:
+        app = session.query(AndroidApp).filter(AndroidApp.app_id == app_id).first()
+    
+    return app is not None
+
+def clean_data(data_list, session, op_sys):
+    """Filter data, remove duplicate records before inserting."""
+    cleaned_data = []
+    seen_ids = set()
+
+    for data in data_list:
+        app_id = data["app_id"]
+        # Check if the record already exists in the database
+        if app_id not in seen_ids and not is_record_exists(session, app_id, op_sys):
+            cleaned_data.append(data)  # Add to cleaned_data if not already present
+            seen_ids.add(app_id)  # Mark app_id as encountered
+    return cleaned_data
 
 class DataStore:
     """Data Store class"""

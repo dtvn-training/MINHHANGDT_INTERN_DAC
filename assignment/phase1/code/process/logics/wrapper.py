@@ -5,11 +5,11 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from ..models.android_app import AndroidApp
 from ..models.ios_app import IosApp
-from .android_service import AndroidService
-from .ios_service import IosService
+from .app_service import AndroidService
+from .app_service import IosService
 from .android_data_collector import AndroidDataCollector
 from .ios_data_collector import IosDataCollector
-from .data_store import DataStore
+from .app_service import DataStore
 from ..database.database import SessionLocal
 
 # from assignment.phase1.code.process.logics.android_service import AndroidService

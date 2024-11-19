@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 import unittest
 from unittest.mock import patch
-from process.logics.android_data_collector import AndroidDataCollector
+from code.process.logics.android_data_collector import AndroidDataCollector
 
 
 class TestAndroidDataCollector(unittest.TestCase):

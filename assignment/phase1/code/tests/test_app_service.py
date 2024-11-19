@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'code')))
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -10,7 +10,7 @@ from process.models.ios_app import IosApp
 
 class TestAppService(unittest.TestCase):
 
-    @patch('logics.services.app_service.SessionLocal')
+    @patch('process.logics.app_service.SessionLocal')
     def test_insert_app_success(self, MockSessionLocal):
 
         #Arrange
@@ -27,7 +27,7 @@ class TestAppService(unittest.TestCase):
         mock_session.commit.assert_called_once()
         mock_session.close.assert_called_once()
 
-    @patch('logics.services.app_service.SessionLocal')
+    @patch('process.logics.app_service.SessionLocal')
     def test_insert_app_failure(self, MockSessionLocal):
 
         #Arrange
@@ -47,7 +47,7 @@ class TestAppService(unittest.TestCase):
         mock_session.rollback.assert_called_once()
         mock_session.close.assert_called_once()
 
-    @patch('logics.services.app_service.SessionLocal')
+    @patch('process.logics.app_service.SessionLocal')
     def test_get_app_by_id_android(self, MockSessionLocal):
         #Arrange
         mock_session = MagicMock()
@@ -80,7 +80,7 @@ class TestAppService(unittest.TestCase):
         # Check the returned result is mock_app
         self.assertEqual(result, mock_app)
 
-    @patch('logics.services.app_service.SessionLocal')
+    @patch('process.logics.app_service.SessionLocal')
     def test_get_app_by_id_ios(self, MockSessionLocal):
         # Arrange: Set up mock session and necessary objects
         mock_session = MagicMock()

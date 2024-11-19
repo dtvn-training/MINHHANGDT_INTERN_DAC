@@ -1,17 +1,15 @@
 import sys
 import os
-
-# Add the root directory of the project to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'code')))
 
 import unittest
 from unittest.mock import patch
-from code.process.logics.android_data_collector import AndroidDataCollector
+from process.logics.android_data_collector import AndroidDataCollector
 
 
 class TestAndroidDataCollector(unittest.TestCase):
 
-    @patch('logics.collectors.android_data_collector.app') #Mock app function from google_play_scraper
+    @patch('process.logics.android_data_collector.app')  #Mock app function from google_play_scraper
     def test_collect_android_data_success(self, mock_app):
         #Arrange
         mock_app.side_effect = [
@@ -61,7 +59,7 @@ class TestAndroidDataCollector(unittest.TestCase):
         self.assertEqual(collected_apps[1].description, 'App Two Description')
         self.assertEqual(collected_apps[1].developer_email, 'dev2@example.com')
 
-    @patch('logics.collectors.android_data_collector.app')
+    @patch('process.logics.android_data_collector.app') 
     def test_collector_data_failure(self, mock_app):
         #Arrange
         mock_app.side_effect = Exception("Test Exception") #Simulate error when crawl data

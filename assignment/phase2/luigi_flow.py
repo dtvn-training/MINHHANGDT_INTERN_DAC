@@ -1,36 +1,12 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'assignment')))
-
-import re
-import requests
-import json
 import pandas as pd
-from bs4 import BeautifulSoup
-from phase1.code.process.logics.android_data_collector import AndroidDataCollector
-from phase1.code.process.logics.ios_data_collector import IosDataCollector
-from phase1.code.process.logics.app_service import DataStore
-from phase1.code.process.database.database import SessionLocal
+from phase1.code.process.logics.execute import find_list_android_app_ids, find_df_ios_app ,process_android_data, process_ios_data
 import os
 import logging
 import datetime
 import luigi
-
-def list_to_string(data):
-    """turn list into list"""
-    if isinstance(data, list):
-        return ' '.join(map(list_to_string, data))  # deque turn element to string
-    elif isinstance(data, dict):
-        return str(data)  # dictionary to string
-    else:
-        return str(data)  # other element to string
-
-def extract_quoted_strings(data):
-    """extract string inside quote sign"""
-
-    # Regular expression finds all strings within double quotes
-    quoted_strings = re.findall(r'"com(.*?)"', data)
-    return quoted_strings
 
 class BaseTask(luigi.Task):
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
@@ -73,40 +49,8 @@ class FindAndroidData (BaseTask):
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def execute(self, cls_name):
-        url = self.url_template.format(language=self.language, country=self.country)
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-        }
-
-        # Prepare the body similar to the f.req structure in the original request
-        body = {
-            'f.req': json.dumps([
-                [
-                    [
-                        'vyAe2',
-                        json.dumps([[None, [[None, [None, int(self.length) + 50]], None, None, [113]], [2, self.chart_name, self.category_id]]])
-                    ]
-                ]
-            ])
-        }
-
-        response = requests.post(url, headers=headers, data=body)
-        response_text = response.text
-        if response_text.startswith(")]}'"):
-            response_text = response_text[4:]
-
-        # Now try to load the cleaned string
-        try:
-            json_str = json.loads(response_text)
-        except json.JSONDecodeError as e:
-            print(f"JSON Decode Error: {e}")
-
-        string_result = list_to_string(json_str)
-        quoted_strings = extract_quoted_strings(string_result)
-        app_strings = ['com' + link for link in quoted_strings]
-
-        app_strings_return = app_strings[:int(self.length)]
-
+        app_strings_return = find_list_android_app_ids(self.language, self.country, self.length, self.chart_name,  self.category_id)
+        
         with self.output().open('w') as file:
             for app_string in app_strings_return:
                 file.write(app_string + '\n')
@@ -125,28 +69,10 @@ class ProcessAndroidData(BaseTask):
     
     def execute(self, cls_name):
         try: 
-            collector = AndroidDataCollector()
             # `self.input()` returns a list, so access the first item
             with self.input()[0].open('r') as input_file:
                 android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
-            collector.collect_android_data(android_app_ids)
-            collected_android_apps = collector.get_collected_android_apps()
-
-            data_to_store = [{
-                "app_id": app.app_id,
-                "app_name": app.app_name,
-                "category": app.category,
-                "price": app.price,
-                "provider": app.provider,
-                "description": app.description,
-                "developer_email": app.developer_email,
-            } for app in collected_android_apps]
-
-            # Lưu dữ liệu vào cơ sở dữ liệu
-            session = SessionLocal()
-            store = DataStore(session)
-            store.insert_values(data_to_store, 'android')
-
+            data_to_store = process_android_data(android_app_ids)
             # Lưu dữ liệu vào file đầu ra (nếu cần)
             with self.output().open('w') as output_file:
                 import json
@@ -165,46 +91,12 @@ class FindIosData(BaseTask):
         # Ensure the 'output' directory exists
         os.makedirs('output', exist_ok=True)  # Creates the directory if it doesn't exist
         
+        # Define the output, which could be a file or database entry
         task_name = "{}.{}".format(self.module, self.cls_name)
         return luigi.LocalTarget(f"output/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
     
-        # Define the output, which could be a file or database entry
-        # return luigi.LocalTarget(f"{self.url.split('/')[-1]}.csv")
-
     def execute(self, cls_name):
-        """Fetch the iOS app data and save it to CSV"""
-        response = requests.get(self.url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        top_list = soup.find('ol', role='feed')
-
-        df = pd.DataFrame(columns=['rank', 'title', 'subtitle', 'link', 'img_links'])
-        apps_data = top_list.find_all('li')
-
-        for app_data in apps_data:
-            link_tag = app_data.find('a')
-            if link_tag:
-                link = link_tag.get('href')
-                images = app_data.find('div').find('picture').find_all('source')
-                image_link = [img.get('srcset') for img in images]
-                rank = link_tag.find('p', class_='we-lockup__rank').get_text()
-                title = link_tag.find('div', class_='we-lockup__text').find('div', class_='we-lockup__title').find(
-                    'div', class_='we-truncate we-truncate--multi-line targeted-link__target'
-                ).find('p').get_text()
-                sub_title = link_tag.find('div', class_='we-lockup__text').find('div', class_='we-truncate we-truncate--single-line we-lockup__subtitle').get_text()
-
-                temp_df = pd.DataFrame({
-                    'rank': [rank],
-                    'title': [title],
-                    'subtitle': [sub_title],
-                    'link': [link],
-                    'img_links': [image_link]
-                })
-
-                df = pd.concat([df, temp_df], ignore_index=True)
-            else:
-                print("Không tìm thấy thẻ <a> với class 'we-lockup  targeted-link'")
-
+        df = find_df_ios_app(self.url)
         # Save to CSV
         df.to_csv(self.output().path, index=False)
 
@@ -226,30 +118,8 @@ class ProcessIosData(BaseTask):
 
     def execute(self, cls_name):
         """Process the data, collect it using IosDataCollector, and insert into DB"""
-        collector = IosDataCollector()
         ios_df = pd.read_csv(self.input().path)
-
-        collector.collect_ios_data(ios_df)
-        collected_ios_apps = collector.get_collected_ios_apps()
-
-        data_to_store = [{
-            "app_id": app.app_id,
-            "app_name": app.app_name,
-            "category": app.category,
-            "price": app.price,
-            "provider": app.provider,
-            "description": app.description,
-            "score": app.score,
-            "cnt_rates": app.cnt_rates,
-            "subtitle": app.subtitle,
-            "link": app.link,
-            "img_links": app.img_links,
-        } for app in collected_ios_apps]
-
-        # Store data in database
-        session = SessionLocal()  # Initialize your session correctly
-        store = DataStore(session)
-        store.insert_values(data_to_store, 'ios')
+        data_to_store = process_ios_data(ios_df)
 
         # Save processed data to output file
         processed_data_df = pd.DataFrame(data_to_store)
@@ -276,5 +146,3 @@ class RunAllTasks(luigi.WrapperTask):
 
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36")
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36")
-
-

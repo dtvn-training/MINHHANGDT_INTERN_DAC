@@ -1,4 +1,4 @@
-from process.logics.wrapper import main_android, main_ios
+from assignment.phase1.code.process.logics.execute import main_android, main_ios
 from process.database.database import init_db
 
 def main():

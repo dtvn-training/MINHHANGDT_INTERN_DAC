@@ -8,7 +8,7 @@ from unittest.mock import patch, MagicMock
 import json
 import requests
 
-from process.logics.wrapper import list_to_string, extract_quoted_strings, find_list_android_app_ids, find_df_ios_app, crawl_android, crawl_ios
+from assignment.phase1.code.process.logics.execute import list_to_string, extract_quoted_strings, find_list_android_app_ids, find_df_ios_app, crawl_android, crawl_ios
 from process.logics.app_service import is_record_exists, clean_data
 
 class TestFunctions(unittest.TestCase):

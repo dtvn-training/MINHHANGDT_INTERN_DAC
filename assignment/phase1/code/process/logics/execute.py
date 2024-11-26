@@ -213,3 +213,50 @@ def main_ios():
     print("Done crawling iOS top free apps.")
     crawl_ios(url_top_paid)  # top paid
     print("Done crawling iOS top paid apps.")
+
+def process_android_data(android_app_ids):
+    collector = AndroidDataCollector()
+    collector.collect_android_data(android_app_ids)
+    collected_android_apps = collector.get_collected_android_apps()
+
+    data_to_store = [{
+        "app_id": app.app_id,
+        "app_name": app.app_name,
+        "category": app.category,
+        "price": app.price,
+        "provider": app.provider,
+        "description": app.description,
+        "developer_email": app.developer_email,
+    } for app in collected_android_apps]
+
+    # Lưu dữ liệu vào cơ sở dữ liệu
+    session = SessionLocal()
+    store = DataStore(session)
+    store.insert_values(data_to_store, 'android')
+    return data_to_store
+
+def process_ios_data(ios_df):
+    collector = IosDataCollector()
+    collector.collect_ios_data(ios_df)
+    collected_ios_apps = collector.get_collected_ios_apps()
+
+    data_to_store = [{
+        "app_id": app.app_id,
+        "app_name": app.app_name,
+        "category": app.category,
+        "price": app.price,
+        "provider": app.provider,
+        "description": app.description,
+        "score": app.score,
+        "cnt_rates": app.cnt_rates,
+        "subtitle": app.subtitle,
+        "link": app.link,
+        "img_links": app.img_links,
+    } for app in collected_ios_apps]
+
+    # Store data in database
+    session = SessionLocal()  # Initialize your session correctly
+    store = DataStore(session)
+    store.insert_values(data_to_store, 'ios')
+
+    return data_to_store

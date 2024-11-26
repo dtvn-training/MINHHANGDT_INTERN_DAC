@@ -146,3 +146,4 @@ class RunAllTasks(luigi.WrapperTask):
 
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36")
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36")
+

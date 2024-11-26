@@ -24,3 +24,4 @@ class AndroidDataCollector:
 
     def get_collected_android_apps(self):
         return self.android_apps
+

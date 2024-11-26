@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'assignment')))
 import pandas as pd
-from phase1.code.process.logics.execute import find_list_android_app_ids, find_df_ios_app ,process_android_data, process_ios_data
+from phase1.code.process.logics.execute import get_android_ids, find_df_ios_app ,process_android_data, process_ios_data
 import os
 import logging
 import datetime
@@ -40,16 +40,12 @@ class BaseTask(luigi.Task):
         pass
 
 class FindAndroidData (BaseTask):
-    language = luigi.Parameter(default="en")
-    country = luigi.Parameter(default="vi")
     chart_name = luigi.Parameter(default="topselling_free")
     length = luigi.IntParameter(default=100)
-    category_id = luigi.Parameter(default="APPLICATION")
-    url_template = luigi.Parameter(default="https://play.google.com/_/PlayStoreUi/data/batchexecute?hl={language}&gl={country}")
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def execute(self, cls_name):
-        app_strings_return = find_list_android_app_ids(self.language, self.country, self.length, self.chart_name,  self.category_id)
+        app_strings_return = get_android_ids(self.chart_name, self.length)
         
         with self.output().open('w') as file:
             for app_string in app_strings_return:
@@ -57,15 +53,12 @@ class FindAndroidData (BaseTask):
 
 class ProcessAndroidData(BaseTask):
     """Crawl Android apps data from Google Play Store"""
-    language = luigi.Parameter(default="en")
-    country = luigi.Parameter(default="vi")
     chart_name = luigi.Parameter(default="topselling_free")
     length = luigi.IntParameter(default=100)
-    category_id = luigi.Parameter(default="APPLICATION")
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def requires(self):
-        return [FindAndroidData(self.language, self.country, self.chart_name, self.length, self.category_id)]
+        return [FindAndroidData(self.chart_name, self.length)]
     
     def execute(self, cls_name):
         try: 
@@ -129,9 +122,9 @@ class ProcessIosData(BaseTask):
 
 class RunAllAndroidTasks(luigi.WrapperTask):
     def requires(self):
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topselling_free", length=100, category_id="APPLICATION")
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topgrossing", length=100, category_id="APPLICATION")
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topselling_paid", length=100, category_id="APPLICATION")
+        yield ProcessAndroidData(chart_name="topselling_free", length=100)
+        yield ProcessAndroidData(chart_name="topgrossing", length=100)
+        yield ProcessAndroidData(chart_name="topselling_paid", length=100)
 
 class RunAllIosTasks(luigi.WrapperTask):
     def requires(self):
@@ -140,10 +133,8 @@ class RunAllIosTasks(luigi.WrapperTask):
         
 class RunAllTasks(luigi.WrapperTask):
     def requires(self):
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topselling_free", length=100, category_id="APPLICATION")
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topgrossing", length=100, category_id="APPLICATION")
-        yield ProcessAndroidData(language="en", country="vi", chart_name="topselling_paid", length=100, category_id="APPLICATION")
-
+        yield ProcessAndroidData(chart_name="topselling_free", length=100)
+        yield ProcessAndroidData(chart_name="topgrossing", length=100)
+        yield ProcessAndroidData(chart_name="topselling_paid", length=100)
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36")
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36")
-

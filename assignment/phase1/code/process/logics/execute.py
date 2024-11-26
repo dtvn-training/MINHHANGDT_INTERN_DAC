@@ -260,3 +260,44 @@ def process_ios_data(ios_df):
     store.insert_values(data_to_store, 'ios')
 
     return data_to_store
+
+def get_android_ids(chart_name, length):
+    language = "en"
+    country = "vi"
+    category_id = "APPLICATION"
+    url = f'https://play.google.com/_/PlayStoreUi/data/batchexecute?hl={language}&gl={country}'
+
+    headers = {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+        }
+
+    # Prepare the body similar to the f.req structure in the original request
+    body = {
+        'f.req': json.dumps([
+            [
+                [
+                    'vyAe2',
+                    json.dumps([[None, [[None, [None, int(length) + 50]], None, None, [113]], [2, chart_name, category_id]]])
+                ]
+            ]
+        ])
+    }
+
+    response = requests.post(url, headers=headers, data=body)
+    response_text = response.text
+    if response_text.startswith(")]}'"):
+        response_text = response_text[4:]
+
+    # Now try to load the cleaned string
+    try:
+        json_str = json.loads(response_text)
+    except json.JSONDecodeError as e:
+        print(f"JSON Decode Error: {e}")
+
+    string_result = list_to_string(json_str)
+    quoted_strings = extract_quoted_strings(string_result)
+    app_strings = ['com' + link for link in quoted_strings]
+
+    app_strings_return = app_strings[:int(length)]
+
+    return app_strings_return

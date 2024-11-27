@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'assignment')))
 import pandas as pd
-from phase1.code.process.logics.execute import get_android_ids, find_df_ios_app ,process_android_data, process_ios_data
+from phase1.code.process.logics.execute import find_df_ios_app , run_find_android_data, run_process_android_data, run_process_ios_data
 import os
 import logging
 import datetime
@@ -48,14 +48,9 @@ class FindAndroidData (BaseTask):
 
     def execute(self, cls_name):
         output_file_path = self.output().path
-        # Check if the file exists and remove it
-        if os.path.exists(output_file_path):
-            os.remove(output_file_path)
-        app_strings_return = get_android_ids(self.chart_name, self.length)
-        
-        with self.output().open('w') as file:
-            for app_string in app_strings_return:
-                file.write(app_string + '\n')
+        run_find_android_data(output_file_path, self.chart_name, self.length)
+    
+
 
 class ProcessAndroidData(BaseTask):
     """Crawl Android apps data from Google Play Store"""
@@ -68,21 +63,7 @@ class ProcessAndroidData(BaseTask):
     
     def execute(self, cls_name):
         try: 
-            # `self.input()` returns a list, so access the first item
-            with self.input()[0].open('r') as input_file:
-                android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
-            data_to_store = process_android_data(android_app_ids)
-            # Lưu dữ liệu vào file đầu ra (nếu cần)
-
-            output_file_path = self.output().path
-            # Check if the file exists and remove it
-            if os.path.exists(output_file_path):
-                os.remove(output_file_path)
-
-            with self.output().open('w') as output_file:
-                import json
-                json.dump(data_to_store, output_file)
-
+            run_process_android_data(self.input()[0], self.output().path)
             self.logger.info(f"Successfully crawled and stored Android data to {self.output().path}")
 
         except Exception as e:
@@ -117,20 +98,12 @@ class ProcessIosData(BaseTask):
         
         task_name = "{}.{}".format(self.module, self.cls_name)
         return luigi.LocalTarget(f"output/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
-    
-        # Define the output file path, for example:
-        # return luigi.LocalTarget(f"processed_{self.url.split('/')[-1]}.csv")
 
     def execute(self, cls_name):
         """Process the data, collect it using IosDataCollector, and insert into DB"""
-        ios_df = pd.read_csv(self.input().path)
-        data_to_store = process_ios_data(ios_df)
-
-        # Save processed data to output file
-        processed_data_df = pd.DataFrame(data_to_store)
-        processed_data_df.to_csv(self.output().path, index=False)
-
-        self.logger.info(f"Successfully crawled and stored {len(data_to_store)} iOS apps.")
+        run_process_ios_data(self.input().path, self.output().path)
+        # self.logger.info(f"Successfully crawled and stored {len(data_to_store)} iOS apps.")
+        self.logger.info(f"Successfully crawled and stored iOS apps.")
 
 class RunAllAndroidTasks(luigi.WrapperTask):
     def requires(self):
@@ -150,3 +123,6 @@ class RunAllTasks(luigi.WrapperTask):
         yield ProcessAndroidData(chart_name="topselling_paid", length=100)
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36")
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36")
+
+if __name__ == '__main__':
+    luigi.run()

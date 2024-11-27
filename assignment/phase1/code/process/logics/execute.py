@@ -11,7 +11,7 @@ from .android_data_collector import AndroidDataCollector
 from .ios_data_collector import IosDataCollector
 from .app_service import DataStore
 from ..database.database import SessionLocal
-
+import os
 # from assignment.phase1.code.process.logics.android_service import AndroidService
 # from assignment.phase1.code.process.logics.ios_service import IosService
 # from process.logics.android_data_collector import AndroidDataCollector
@@ -301,3 +301,34 @@ def get_android_ids(chart_name, length):
     app_strings_return = app_strings[:int(length)]
 
     return app_strings_return
+
+def run_find_android_data(output_file_path, chart_name, length):
+    # Check if the file exists and remove it
+    if os.path.exists(output_file_path):
+        os.remove(output_file_path)
+        app_strings_return = get_android_ids(chart_name, length)
+        
+        with open(output_file_path, 'w') as file:
+            for app_string in app_strings_return:
+                file.write(app_string + '\n')
+
+def run_process_android_data(input_file_path, output_file_path):
+    with open(input_file_path, 'r') as input_file:
+            android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
+            data_to_store = process_android_data(android_app_ids)
+            
+            # Check if the file exists and remove it
+            if os.path.exists(output_file_path):
+                os.remove(output_file_path)
+
+            with open(output_file_path, 'w') as output_file:
+                import json
+                json.dump(data_to_store, output_file)
+
+def run_process_ios_data(input_file_path, output_file_path):
+    ios_df = pd.read_csv(input_file_path)
+    data_to_store = process_ios_data(ios_df)
+
+    # Save processed data to output file
+    processed_data_df = pd.DataFrame(data_to_store)
+    processed_data_df.to_csv(output_file_path, index=False)

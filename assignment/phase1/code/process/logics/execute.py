@@ -79,7 +79,7 @@ def find_list_android_app_ids(language, country, length, chart_name, category_id
 def find_df_ios_app(url):
     """find list of ios_app contain rank, title, subtitle, link, img_links"""
 
-    response = requests.get(url)
+    response = requests.get(url, allow_redirects=False)
     soup = BeautifulSoup(response.text, 'html.parser')
 
     top_list = soup.find('ol', role='feed')

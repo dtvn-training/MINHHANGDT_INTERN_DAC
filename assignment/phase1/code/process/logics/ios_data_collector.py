@@ -15,13 +15,16 @@ class IosDataCollector:
         """
         for index, row in df_ids.iterrows():
             url = row['link']
-            resp = requests.get(url)
+            resp = requests.get(url, allow_redirects=False)
             bs_soup = BeautifulSoup(resp.text, 'html.parser')
 
             secs_list = bs_soup.find_all('section', class_='l-content-width section section--bordered')
 
-            secs_des = secs_list[1]
-            description = secs_des.find('p').get_text()
+            try:
+                secs_des = secs_list[1]
+                description = secs_des.find('p').get_text()
+            except:
+                description = ""
             
             if len(secs_list) >= 3:
                 try:
@@ -43,21 +46,38 @@ class IosDataCollector:
 
             cater_ls = bs_soup.find_all('section', class_='l-content-width section section--bordered section--information')
 
-            cate = cater_ls[0]
-            siz = cate.find('div', class_="information-list__item l-column small-12 medium-6 large-4 small-valign-top").find(
-                'dd', class_="information-list__item__definition"
-            ).get_text()
+            try: 
+                cate = cater_ls[0]
+                try: 
+                    siz = cate.find('div', class_="information-list__item l-column small-12 medium-6 large-4 small-valign-top").find(
+                        'dd', class_="information-list__item__definition"
+                    ).get_text()
+                except:
+                    print("LINK: " , url)
+                    siz = 0
+                
+                try:
+                    category = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
+                        'dd', class_="information-list__item__definition"
+                    )[2].get_text()
+                except:
+                    category = ""
 
-            category = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
-                'dd', class_="information-list__item__definition"
-            )[2].get_text()
+                try:
+                    provider = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
+                    'dd', class_="information-list__item__definition"
+                    )[0].get_text()
+                except:
+                    provider = ""
 
-            provider = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
-            'dd', class_="information-list__item__definition"
-            )[0].get_text()
+                try:
+                    price = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
+                    'dd', class_="information-list__item__definition")[7].get_text().strip()
+                except:
+                    price = "Free"
 
-            price = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
-            'dd', class_="information-list__item__definition")[7].get_text().strip()
+            except:
+                continue
 
             if price == "Free":
                 price = 0

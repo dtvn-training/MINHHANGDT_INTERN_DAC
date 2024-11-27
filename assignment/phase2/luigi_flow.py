@@ -33,7 +33,9 @@ class BaseTask(luigi.Task):
 
     def output(self):
         task_name = "{}.{}".format(self.module, self.cls_name)
-        return luigi.LocalTarget(f"output/{task_name}_{self.datehour.strftime("%Y-%m-%d_%H%M")}.txt")
+
+        target_path = f"output/{task_name}_{self.datehour.strftime("%Y-%m-%d_%H%M")}.txt"
+        return luigi.LocalTarget(target_path)
     
     def execute(self, cls_name):
         """ Override this method in the child class to implement specific task logic """
@@ -45,6 +47,10 @@ class FindAndroidData (BaseTask):
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def execute(self, cls_name):
+        output_file_path = self.output().path
+        # Check if the file exists and remove it
+        if os.path.exists(output_file_path):
+            os.remove(output_file_path)
         app_strings_return = get_android_ids(self.chart_name, self.length)
         
         with self.output().open('w') as file:
@@ -67,6 +73,12 @@ class ProcessAndroidData(BaseTask):
                 android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
             data_to_store = process_android_data(android_app_ids)
             # Lưu dữ liệu vào file đầu ra (nếu cần)
+
+            output_file_path = self.output().path
+            # Check if the file exists and remove it
+            if os.path.exists(output_file_path):
+                os.remove(output_file_path)
+
             with self.output().open('w') as output_file:
                 import json
                 json.dump(data_to_store, output_file)

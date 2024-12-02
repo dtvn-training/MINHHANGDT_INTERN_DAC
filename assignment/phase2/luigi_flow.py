@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'assignment')))
 import pandas as pd
-from phase1.code.process.logics.execute import find_df_ios_app , run_find_android_data, run_process_android_data, run_process_ios_data
+from phase1.code.process.logics.execute import run_process_android_data,run_find_android_data, get_android_ids, find_df_ios_app ,process_android_data, process_ios_data, run_process_ios_data
 import os
 import logging
 import datetime
@@ -47,10 +47,7 @@ class FindAndroidData (BaseTask):
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def execute(self, cls_name):
-        output_file_path = self.output().path
-        run_find_android_data(output_file_path, self.chart_name, self.length)
-    
-
+        run_find_android_data(self.output().path, self.chart_name, self.length)
 
 class ProcessAndroidData(BaseTask):
     """Crawl Android apps data from Google Play Store"""
@@ -63,7 +60,8 @@ class ProcessAndroidData(BaseTask):
     
     def execute(self, cls_name):
         try: 
-            run_process_android_data(self.input()[0], self.output().path)
+            run_process_android_data(self.input()[0].path, self.output().path)
+
             self.logger.info(f"Successfully crawled and stored Android data to {self.output().path}")
 
         except Exception as e:
@@ -75,11 +73,11 @@ class FindIosData(BaseTask):
 
     def output(self):
         # Ensure the 'output' directory exists
-        os.makedirs('output', exist_ok=True)  # Creates the directory if it doesn't exist
+        os.makedirs('output_ios', exist_ok=True)  # Creates the directory if it doesn't exist
         
         # Define the output, which could be a file or database entry
         task_name = "{}.{}".format(self.module, self.cls_name)
-        return luigi.LocalTarget(f"output/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
+        return luigi.LocalTarget(f"output_ios/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
     
     def execute(self, cls_name):
         df = find_df_ios_app(self.url)
@@ -94,10 +92,10 @@ class ProcessIosData(BaseTask):
     
     def output(self):
         # Ensure the 'output' directory exists
-        os.makedirs('output', exist_ok=True)  # Creates the directory if it doesn't exist
+        os.makedirs('output_ios', exist_ok=True)  # Creates the directory if it doesn't exist
         
         task_name = "{}.{}".format(self.module, self.cls_name)
-        return luigi.LocalTarget(f"output/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
+        return luigi.LocalTarget(f"output_ios/{task_name}_{self.datehour.strftime('%Y-%m-%d_%H%M')}.csv")
 
     def execute(self, cls_name):
         """Process the data, collect it using IosDataCollector, and insert into DB"""
@@ -123,6 +121,3 @@ class RunAllTasks(luigi.WrapperTask):
         yield ProcessAndroidData(chart_name="topselling_paid", length=100)
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36")
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36")
-
-if __name__ == '__main__':
-    luigi.run()

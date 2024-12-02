@@ -303,27 +303,37 @@ def get_android_ids(chart_name, length):
     return app_strings_return
 
 def run_find_android_data(output_file_path, chart_name, length):
+    # print("LINK FIND RUN_FIND_ANDROID_DATA: ", output_file_path)
+    # Check if the file exists and remove it
+    # Tạo thư mục nếu chưa tồn tại
+    output_dir = os.path.dirname(output_file_path)
+    os.makedirs(output_dir, exist_ok=True)  # Tạo thư mục nếu nó chưa tồn tại 
+    
+    if os.path.exists(output_file_path):
+        os.remove(output_file_path)
+
+    app_strings_return = get_android_ids(chart_name, length)
+        
+    with open(output_file_path, 'w') as file:
+        for app_string in app_strings_return:
+            file.write(app_string + '\n')
+
+def run_process_android_data(input_file_path, output_file_path):
+    # print("INPUT FILE ", input_file_path)
+    with open(input_file_path, 'r') as input_file:
+        android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
+       
+    data_to_store = process_android_data(android_app_ids)
+
+    output_dir = os.path.dirname(output_file_path)
+    os.makedirs(output_dir, exist_ok=True)  # Tạo thư mục nếu nó chưa tồn tại
     # Check if the file exists and remove it
     if os.path.exists(output_file_path):
         os.remove(output_file_path)
-        app_strings_return = get_android_ids(chart_name, length)
-        
-        with open(output_file_path, 'w') as file:
-            for app_string in app_strings_return:
-                file.write(app_string + '\n')
 
-def run_process_android_data(input_file_path, output_file_path):
-    with open(input_file_path, 'r') as input_file:
-            android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
-            data_to_store = process_android_data(android_app_ids)
-            
-            # Check if the file exists and remove it
-            if os.path.exists(output_file_path):
-                os.remove(output_file_path)
-
-            with open(output_file_path, 'w') as output_file:
-                import json
-                json.dump(data_to_store, output_file)
+    with open(output_file_path, 'w') as output_file:
+        import json
+        json.dump(data_to_store, output_file)
 
 def run_process_ios_data(input_file_path, output_file_path):
     ios_df = pd.read_csv(input_file_path)

@@ -1,0 +1,61 @@
+ASSIGNMENT\PHASE1
+├───code
+│   │   main.py
+│   │
+│   ├───process
+│   │   │   __init__.py
+│   │   │
+│   │   ├───config
+│   │   │   │   config.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           config.cpython-313.pyc
+│   │   │
+│   │   ├───database
+│   │   │   │   database.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           database.cpython-313.pyc
+│   │   │
+│   │   ├───logics
+│   │   │   │   android_data_collector.py
+│   │   │   │   app_service.py
+│   │   │   │   execute.py
+│   │   │   │   ios_data_collector.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           android_data_collector.cpython-313.pyc
+│   │   │           android_service.cpython-313.pyc
+│   │   │           app_service.cpython-313.pyc
+│   │   │           data_store.cpython-313.pyc
+│   │   │           execute.cpython-313.pyc
+│   │   │           ios_data_collector.cpython-313.pyc
+│   │   │           ios_service.cpython-313.pyc
+│   │   │           luigi_flow.cpython-313.pyc
+│   │   │           wrapper.cpython-313.pyc
+│   │   │           __init__.cpython-313.pyc
+│   │   │
+│   │   ├───models
+│   │   │   │   android_app.py
+│   │   │   │   app.py
+│   │   │   │   ios_app.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           android_app.cpython-313.pyc
+│   │   │           app.cpython-313.pyc
+│   │   │           ios_app.cpython-313.pyc
+│   │   │           __init__.cpython-313.pyc
+│   │   │
+│   │   └───__pycache__
+│   │           __init__.cpython-313.pyc
+│   │
+│   └───tests
+│           test_android_collector.py
+│           test_app_service.py
+│           test_execute.py
+│           test_ios_collector.py
+│
+└───docs
+        folder_structure.txt

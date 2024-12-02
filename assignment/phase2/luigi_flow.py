@@ -34,7 +34,7 @@ class BaseTask(luigi.Task):
     def output(self):
         task_name = "{}.{}".format(self.module, self.cls_name)
 
-        target_path = f"output/{task_name}_{self.datehour.strftime("%Y-%m-%d_%H%M")}.txt"
+        target_path = f"output_android/{task_name}_{self.datehour.strftime("%Y-%m-%d_%H%M")}.txt"
         return luigi.LocalTarget(target_path)
     
     def execute(self, cls_name):

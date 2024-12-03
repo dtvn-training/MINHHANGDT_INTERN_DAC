@@ -12,6 +12,7 @@ from .ios_data_collector import IosDataCollector
 from .app_service import DataStore
 from ..database.database import SessionLocal
 import os
+import logging
 # from assignment.phase1.code.process.logics.android_service import AndroidService
 # from assignment.phase1.code.process.logics.ios_service import IosService
 # from process.logics.android_data_collector import AndroidDataCollector
@@ -76,7 +77,33 @@ def find_list_android_app_ids(language, country, length, chart_name, category_id
 
     return app_strings_return
 
-def find_df_ios_app(url):
+def find_df_ios_app(url, DRYRUN):
+    if DRYRUN:
+            # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
+            logging.info("[DRYRUN] Simulating find IOS data")
+            ios_df = pd.DataFrame({
+                'rank': [1],
+                'title': ['ios_app1'],
+                'subtitle': ['this is ios app 1'],
+                'link': ['example1.com'],
+                'img_links': ['img1.com']
+            },
+            {
+                'rank': [2],
+                'title': ['ios_app2'],
+                'subtitle': ['this is ios app 2'],
+                'link': ['example2.com'],
+                'img_links': ['img2.com']
+            },
+            {
+                'rank': [3],
+                'title': ['ios_app3'],
+                'subtitle': ['this is ios app 3'],
+                'link': ['example3.com'],
+                'img_links': ['img3.com']
+            })
+            return ios_df
+    
     """find list of ios_app contain rank, title, subtitle, link, img_links"""
 
     response = requests.get(url, allow_redirects=False)
@@ -302,7 +329,25 @@ def get_android_ids(chart_name, length):
 
     return app_strings_return
 
-def run_find_android_data(output_file_path, chart_name, length):
+def run_find_android_data(output_file_path, chart_name, length, DRYRUN):
+    if DRYRUN:
+            # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
+            logging.info("[DRYRUN] Simulating find android data")
+            android_app_ids = ['com.example.app1', 'com.example.app2', 'com.example.app3']
+            
+            output_dir = os.path.dirname(output_file_path)
+            os.makedirs(output_dir, exist_ok=True)  # Tạo thư mục nếu nó chưa tồn tại 
+
+            target_file = output_file_path
+            if os.path.exists(target_file):
+                logging.warning(f"File {target_file} already exists. Renaming or deleting it.")
+                os.remove(target_file)  # Or you can rename the file
+
+            with open(output_file_path,'w') as f:
+                for app_string in android_app_ids:
+                    f.write(app_string + '\n')
+            return
+    
     # print("LINK FIND RUN_FIND_ANDROID_DATA: ", output_file_path)
     # Check if the file exists and remove it
     # Tạo thư mục nếu chưa tồn tại
@@ -318,7 +363,22 @@ def run_find_android_data(output_file_path, chart_name, length):
         for app_string in app_strings_return:
             file.write(app_string + '\n')
 
-def run_process_android_data(input_file_path, output_file_path):
+def run_process_android_data(input_file_path, output_file_path, DRYRUN):
+    if DRYRUN:
+            output_dir = os.path.dirname(output_file_path)
+            os.makedirs(output_dir, exist_ok=True)  # Tạo thư mục nếu nó chưa tồn tại
+            target_file = output_file_path
+            if os.path.exists(target_file):
+                os.remove(target_file)  # Or you can rename the file
+
+            # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
+            logging.info("[DRYRUN] Simulating data processing for iOS app")
+            with open(input_file_path, 'r') as input_file:
+                    android_app_ids = input_file.read().splitlines()
+            with open(output_file_path,'w') as f:
+                f.write('Simulated data processing completed: ' + ', '.join(android_app_ids))
+            return
+    
     # print("INPUT FILE ", input_file_path)
     with open(input_file_path, 'r') as input_file:
         android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
@@ -335,7 +395,21 @@ def run_process_android_data(input_file_path, output_file_path):
         import json
         json.dump(data_to_store, output_file)
 
-def run_process_ios_data(input_file_path, output_file_path):
+def run_process_ios_data(input_file_path, output_file_path, DRYRUN):
+    if DRYRUN:
+            
+        target_file = output_file_path
+        if os.path.exists(target_file):
+            logging.warning(f"File {target_file} already exists. Renaming or deleting it.")
+            os.remove(target_file)  # Or you can rename the file
+            
+        # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
+        logging.info("[DRYRUN] Simulating data processing for iOS app")
+        ios_df = pd.read_csv(input_file_path)
+        processed_data_df = pd.DataFrame(ios_df)
+        processed_data_df.to_csv(output_file_path, index=False)
+        return
+    
     ios_df = pd.read_csv(input_file_path)
     data_to_store = process_ios_data(ios_df)
 

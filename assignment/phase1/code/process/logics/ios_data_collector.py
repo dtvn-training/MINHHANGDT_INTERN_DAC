@@ -29,13 +29,13 @@ class IosDataCollector:
             if len(secs_list) >= 3:
                 try:
                     secs = secs_list[2]
-                    score = secs.find('div', class_='we-customer-ratings lockup').find(
+                    score = float(secs.find('div', class_='we-customer-ratings lockup').find(
                         'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
-                    ).find('div', class_='we-customer-ratings__averages').find('span').get_text()
+                    ).find('div', class_='we-customer-ratings__averages').find('span').get_text())
 
-                    cnt_rates = Integer(secs.find('div', class_='we-customer-ratings lockup').find(
+                    cnt_rates = int(secs.find('div', class_='we-customer-ratings lockup').find(
                         'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
-                    ).find('div', class_='we-customer-ratings__count small-hide medium-show').get_text(strip=True).split()[0])
+                    ).find('div', class_='we-customer-ratings__count small-hide medium-show').get_text(strip=True).split(" ")[0])
                     
                 except:
                     score = 0
@@ -53,7 +53,6 @@ class IosDataCollector:
                         'dd', class_="information-list__item__definition"
                     ).get_text()
                 except:
-                    print("LINK: " , url)
                     siz = 0
                 
                 try:
@@ -105,3 +104,4 @@ class IosDataCollector:
 
     def get_collected_ios_apps(self):
         return self.ios_apps
+    

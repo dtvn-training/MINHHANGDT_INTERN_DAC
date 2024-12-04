@@ -143,5 +143,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     init_db()
     # luigi.build([RunAllAndroidTasks(DRYRUN = True)], local_scheduler = True)
-    # luigi.build([RunAllIosTasks()], local_scheduler = True)
+    # luigi.build([RunAllIosTasks(DRYRUN = False)], local_scheduler = True)
     luigi.build([RunAllTasks(DRYRUN = False)], local_scheduler = True)

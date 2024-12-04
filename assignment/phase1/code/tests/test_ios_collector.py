@@ -1,7 +1,7 @@
 """NOT COMPLETE YET"""
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'code')))
 
 import unittest
 from unittest.mock import patch, MagicMock
@@ -9,76 +9,104 @@ from bs4 import BeautifulSoup
 import requests
 import pandas as pd
 from process.logics.ios_data_collector import IosDataCollector
+from process.models.ios_app import IosApp
 
 class TestIosDataCollector(unittest.TestCase):
-
-    @patch('logics.collectors.ios_data_collector.requests.get')
-    @patch('logics.collectors.ios_data_collector.BeautifulSoup')
-    def test_collect_ios_data(self, mock_beautiful_soup, mock_requests_get):
-        # Arrange
-
-        # Mock response from requests.get with a simple HTML structure
-        mock_html_content = '''
+    
+    @patch('process.logics.ios_data_collector.requests.get')
+    @patch('process.logics.ios_data_collector.BeautifulSoup')
+    @patch('process.logics.ios_data_collector.IosApp')
+    def test_collect_ios_data(self, mock_ios_app, mock_bs4, mock_requests_get):
+        # Mock HTML response from requests.get
+        mock_html = """
         <html>
-            <body>
-                <div class="app-details">
-                    <span class="app-description">Test description</span>
-                    <span class="app-description">Test description 2</span>
-                    <span class="app-description">Test description 3</span>
+            <section class="l-content-width section section--bordered"></section>
+
+            <section class="l-content-width section section--bordered">
+                <p>Description of the app.</p>
+            </section>
+
+            <section class="l-content-width section section--bordered">
+                <div class="we-customer-ratings lockup">
+                    <div class="we-customer-ratings__stats l-column small-4 medium-6 large-4">
+                        <div class="we-customer-ratings__averages">
+                            <span>4.5</span>
+                        </div>
+                        <div class="we-customer-ratings__count small-hide medium-show">
+                            1234 ratings
+                        </div>
+                    </div>
                 </div>
-                <div class="category-provider">
-                    <span class="category">Test category</span>
-                    <span class="provider">Test provider</span>
-                    <span class="price">Free</span>
+            </section>
+
+            <section class="l-content-width section section--bordered section--information">
+                <div class="information-list__item l-column small-12 medium-6 large-4 small-valign-top">
+                    <dd class="information-list__item__definition">100 MB</dd>
                 </div>
-            </body>
+                <dl class="information-list information-list--app medium-columns l-row">
+                    <dd class="information-list__item__definition">Provider XYZ</dd>
+                    <dd class="information-list__item__definition"></dd>
+                    <dd class="information-list__item__definition">Games</dd>
+                    <dd class="information-list__item__definition"></dd>
+                    <dd class="information-list__item__definition"></dd>
+                    <dd class="information-list__item__definition"></dd>
+                    <dd class="information-list__item__definition"></dd>
+                    <dd class="information-list__item__definition">Free</dd>
+                </dl>
+            </section>
+
         </html>
-        '''
+        """
         mock_response = MagicMock()
-        mock_response.text = mock_html_content
+        mock_response.text = mock_html
         mock_requests_get.return_value = mock_response
 
-        # Mock BeautifulSoup behavior
-        mock_soup = MagicMock()
-        mock_beautiful_soup.return_value = mock_soup
+        # Mock BeautifulSoup to return sections correctly
+        mock_soup = BeautifulSoup(mock_html, 'html.parser')
+        mock_bs4.return_value = mock_soup
 
-        # Mocking find_all to return a list with at least 2 elements
-        mock_section1 = MagicMock()
-        mock_section2 = MagicMock()
-        mock_section3 = MagicMock()
+        # Mock IosApp creation
+        mock_ios_app.return_value = MagicMock()
 
-        mock_soup.find_all.return_value = [mock_section1, mock_section2]  # Make sure there are at least 2 items
+        # Create a mock DataFrame df_ids
+        df_ids = pd.DataFrame({
+            'rank': [1],
+            'title': ['Test App'],
+            'subtitle': ['Test Subtitle'],
+            'link': ['http://example.com'],
+            'img_links': [['http://example.com/image1.jpg', 'http://example.com/image2.jpg']]
+        })
 
-        mock_section1.find.return_value.get_text.return_value = 'Test description'
-        mock_section2.find.return_value.get_text.return_value = 'Test description 2'
-
-        # Mock category and provider information
-        mock_category_section = MagicMock()
-        mock_soup.find_all.return_value = [mock_category_section]
-        mock_category_section.find.return_value.get_text.return_value = 'Test category'
-
-        mock_category_section.find_all.return_value = [
-            MagicMock(get_text=MagicMock(return_value='Test category')),
-            MagicMock(get_text=MagicMock(return_value='Test provider')),
-            MagicMock(get_text=MagicMock(return_value='Free'))
-        ]
-
-        # Create a mock DataFrame
-        data = {'title': ['Test App'], 'link': ['http://testapp.com'], 'subtitle': ['Test Subtitle'], 'img_links': [['http://img1.com']]}
-        df_mock = pd.DataFrame(data)
-
+        # Create an instance of IosDataCollector
         collector = IosDataCollector()
 
-        # Act
-        collector.collect_ios_data(df_mock)
+        # Run the method to collect data
+        collector.collect_ios_data(df_ids)
 
-        # Assert
-        collected_apps = collector.get_collected_ios_apps()
-        self.assertEqual(len(collected_apps), 1)
-        self.assertEqual(collected_apps[0].app_name, 'Test App')
-        self.assertEqual(collected_apps[0].category, 'Test category')
-        self.assertEqual(collected_apps[0].provider, 'Test provider')
-        self.assertEqual(collected_apps[0].price, 0)  # Price is 'Free'
+        # Assert that the HTTP request was made to the correct URL
+        mock_requests_get.assert_called_once_with('http://example.com', allow_redirects=False)
+
+        # Assert that IosApp was called with correct parameters
+        mock_ios_app.assert_called_once_with(
+            app_id='Test App',
+            app_name='Test App',
+            category='Games',
+            price=0,
+            provider='Provider XYZ',
+            description='Description of the app.',
+            score=4.5,
+            cnt_rates=1234,
+            subtitle='Test Subtitle',
+            link='http://example.com',
+            img_links='http://example.com/image1.jpg,http://example.com/image2.jpg'
+        )
+
+        # Assert that the ios_apps list has one item
+        self.assertEqual(len(collector.ios_apps), 1)
+
+        # Verify that the collected app is an instance of IosApp
+        self.assertIsInstance(collector.ios_apps[0], MagicMock)
+
 
 if __name__ == '__main__':
     unittest.main()

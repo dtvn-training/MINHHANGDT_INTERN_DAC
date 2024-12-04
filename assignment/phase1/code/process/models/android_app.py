@@ -7,7 +7,7 @@ class AndroidApp(AppData):
     app_id = Column(String(250), primary_key=True)
     app_name = Column(String(200))
     category = Column(String(100))
-    price = Column(Float)
+    price = Column(String(100))
     provider = Column(String(100))
     description = Column(Text)
     developer_email = Column(String(100))

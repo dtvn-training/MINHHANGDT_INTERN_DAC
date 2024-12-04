@@ -29,13 +29,13 @@ class IosDataCollector:
             if len(secs_list) >= 3:
                 try:
                     secs = secs_list[2]
-                    score = float(secs.find('div', class_='we-customer-ratings lockup').find(
+                    score = secs.find('div', class_='we-customer-ratings lockup').find(
                         'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
-                    ).find('div', class_='we-customer-ratings__averages').find('span').get_text())
+                    ).find('div', class_='we-customer-ratings__averages').find('span').get_text()
 
-                    cnt_rates = int(secs.find('div', class_='we-customer-ratings lockup').find(
+                    cnt_rates = secs.find('div', class_='we-customer-ratings lockup').find(
                         'div', class_='we-customer-ratings__stats l-column small-4 medium-6 large-4'
-                    ).find('div', class_='we-customer-ratings__count small-hide medium-show').get_text(strip=True).split(" ")[0])
+                    ).find('div', class_='we-customer-ratings__count small-hide medium-show').get_text()
                     
                 except:
                     score = 0
@@ -71,7 +71,7 @@ class IosDataCollector:
 
                 try:
                     price = cate.find('dl', class_="information-list information-list--app medium-columns l-row").find_all(
-                    'dd', class_="information-list__item__definition")[7].get_text().strip()
+                    'dd', class_="information-list__item__definition")[7].get_text()
                 except:
                     price = "Free"
 
@@ -80,10 +80,9 @@ class IosDataCollector:
 
             if price == "Free":
                 price = 0
-            else:
                 # Xóa ký tự không phải số
-                price = re.sub(r'[^\d]', '', price)
-                price = float(price) if price else 0
+                # price = re.sub(r'[^\d]', '', price)
+                # price = float(price) if price else 0
 
 
             ios_app = IosApp(

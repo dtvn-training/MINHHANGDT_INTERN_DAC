@@ -107,6 +107,7 @@ def find_df_ios_app(url, DRYRUN):
     """find list of ios_app contain rank, title, subtitle, link, img_links"""
 
     response = requests.get(url, allow_redirects=False)
+    response.encoding = 'utf-8'
     soup = BeautifulSoup(response.text, 'html.parser')
 
     top_list = soup.find('ol', role='feed')
@@ -123,7 +124,7 @@ def find_df_ios_app(url, DRYRUN):
             
             # get images lnk
             images = app_data.find('div').find('picture').find_all('source')
-            image_link = [img.get('srcset') for img in images]
+            image_link = ', '.join([img.get('srcset') for img in images])
 
             # get rank
             rank = link_tag.find('p', class_='we-lockup__rank').get_text()
@@ -206,7 +207,7 @@ def crawl_ios(url):
             "app_id": app.app_id,
             "app_name": app.app_name,
             "category": app.category,
-            "price": app.price,
+            # "price": app.price,
             "provider": app.provider,
             "description": app.description,
             "score": app.score,
@@ -271,7 +272,7 @@ def process_ios_data(ios_df):
         "app_id": app.app_id,
         "app_name": app.app_name,
         "category": app.category,
-        "price": app.price,
+        # "price": app.price,
         "provider": app.provider,
         "description": app.description,
         "score": app.score,
@@ -343,7 +344,7 @@ def run_find_android_data(output_file_path, chart_name, length, DRYRUN):
                 logging.warning(f"File {target_file} already exists. Renaming or deleting it.")
                 os.remove(target_file)  # Or you can rename the file
 
-            with open(output_file_path,'w') as f:
+            with open(output_file_path,'w', encoding="utf-8") as f:
                 for app_string in android_app_ids:
                     f.write(app_string + '\n')
             return
@@ -359,7 +360,7 @@ def run_find_android_data(output_file_path, chart_name, length, DRYRUN):
 
     app_strings_return = get_android_ids(chart_name, length)
         
-    with open(output_file_path, 'w') as file:
+    with open(output_file_path, 'w', encoding="utf-8") as file:
         for app_string in app_strings_return:
             file.write(app_string + '\n')
 
@@ -373,14 +374,14 @@ def run_process_android_data(input_file_path, output_file_path, DRYRUN):
 
             # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
             logging.info("[DRYRUN] Simulating data processing for iOS app")
-            with open(input_file_path, 'r') as input_file:
+            with open(input_file_path, 'r', encoding="utf-8") as input_file:
                     android_app_ids = input_file.read().splitlines()
-            with open(output_file_path,'w') as f:
+            with open(output_file_path,'w', encoding="utf-8") as f:
                 f.write('Simulated data processing completed: ' + ', '.join(android_app_ids))
             return
     
     # print("INPUT FILE ", input_file_path)
-    with open(input_file_path, 'r') as input_file:
+    with open(input_file_path, 'r', encoding="utf-8") as input_file:
         android_app_ids = input_file.read().splitlines()  # ensure it's a list of app IDs
        
     data_to_store = process_android_data(android_app_ids)
@@ -391,7 +392,7 @@ def run_process_android_data(input_file_path, output_file_path, DRYRUN):
     if os.path.exists(output_file_path):
         os.remove(output_file_path)
 
-    with open(output_file_path, 'w') as output_file:
+    with open(output_file_path, 'w', encoding="utf-8") as output_file:
         import json
         json.dump(data_to_store, output_file)
 
@@ -405,14 +406,14 @@ def run_process_ios_data(input_file_path, output_file_path, DRYRUN):
             
         # Chế độ dry-run: Chỉ log và không thực hiện hành động thật
         logging.info("[DRYRUN] Simulating data processing for iOS app")
-        ios_df = pd.read_csv(input_file_path)
+        ios_df = pd.read_csv(input_file_path, encoding="utf-8")
         processed_data_df = pd.DataFrame(ios_df)
-        processed_data_df.to_csv(output_file_path, index=False)
+        processed_data_df.to_csv(output_file_path, index=False, encoding="utf-8")
         return
     
-    ios_df = pd.read_csv(input_file_path)
+    ios_df = pd.read_csv(input_file_path, encoding="utf-8")
     data_to_store = process_ios_data(ios_df)
 
     # Save processed data to output file
     processed_data_df = pd.DataFrame(data_to_store)
-    processed_data_df.to_csv(output_file_path, index=False)
+    processed_data_df.to_csv(output_file_path, index=False, encoding="utf-8")

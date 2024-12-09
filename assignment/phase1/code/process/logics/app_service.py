@@ -129,14 +129,14 @@ class DataStore:
                 app_id=data["app_id"],
                 app_name=data["app_name"],
                 category=data["category"],
-                price=data["price"],
+                # price=data["price"],
                 provider=data["provider"],
                 description=data["description"],
                 score=data["score"],
                 cnt_rates=data["cnt_rates"],
                 subtitle=data["subtitle"],
                 link=data["link"],
-                img_links=','.join(data["img_links"])
+                img_links=data["img_links"]
             )
             return app_
         else:

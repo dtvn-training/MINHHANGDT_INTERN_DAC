@@ -13,5 +13,6 @@ class AndroidApp(AppData):
     developer_email = Column(String(100))
 
     def __init__(self, app_id, app_name, category, price, provider, description, developer_email):
-        super().__init__(app_id, app_name, category, price, provider, description)
+        super().__init__(app_id, app_name, category, provider, description)
+        self.price = price
         self.developer_email = developer_email

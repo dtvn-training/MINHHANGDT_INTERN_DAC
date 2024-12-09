@@ -15,7 +15,11 @@ class IosDataCollector:
         """
         for index, row in df_ids.iterrows():
             url = row['link']
+            if index == 1:
+                print('IMG LINKS: ', row['img_links'])
+
             resp = requests.get(url, allow_redirects=False)
+            resp.encoding = 'utf-8'
             bs_soup = BeautifulSoup(resp.text, 'html.parser')
 
             secs_list = bs_soup.find_all('section', class_='l-content-width section section--bordered')
@@ -84,19 +88,32 @@ class IosDataCollector:
                 # price = re.sub(r'[^\d]', '', price)
                 # price = float(price) if price else 0
 
+            # if isinstance(row['img_links'], list):
+            #     img_links_format = ','.join(row['img_links'])
+            # else:
+
+
+            # img_links_raw = row['img_links']
+            # img_links_split = img_links_raw.split(',')
+            # cleaned_links = []
+
+            # for link in img_links_split:
+            #     # Extract only the URL part before any whitespace or 'w' (width)
+            #     clean_link = link.split()[0]
+            #     cleaned_links.append(clean_link)
 
             ios_app = IosApp(
                     app_id=row['title'],
                     app_name=row['title'],
                     category=category,
-                    price = price,
+                    # price = price,
                     provider = provider,
                     description=description,
                     score = score,
                     cnt_rates = cnt_rates,
                     subtitle = row['subtitle'],
                     link = row['link'],
-                    img_links = ','.join(row['img_links'])
+                    img_links = row['img_links']
                 )
             
             self.ios_apps.append(ios_app)

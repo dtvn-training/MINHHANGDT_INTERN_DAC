@@ -91,7 +91,7 @@ class FindIosData(BaseTask):
     
         df = find_df_ios_app(self.url, self.DRYRUN)
         # Save to CSV
-        df.to_csv(self.output().path, index=False)
+        df.to_csv(self.output().path, encoding="utf-8", index=False)
 
 class ProcessIosData(BaseTask):
     url = luigi.Parameter()

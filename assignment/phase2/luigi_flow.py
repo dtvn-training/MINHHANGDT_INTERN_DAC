@@ -46,7 +46,7 @@ class FindAndroidData (BaseTask):
     chart_name = luigi.Parameter(default="topselling_free")
     length = luigi.IntParameter(default=100)
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
-    DRYRUN = luigi.BoolParameter(default = True)
+    DRYRUN = luigi.BoolParameter(default = False)
 
     def execute(self, cls_name):
         run_find_android_data(self.output().path, self.chart_name, self.length, self.DRYRUN)
@@ -55,7 +55,7 @@ class ProcessAndroidData(BaseTask):
     """Crawl Android apps data from Google Play Store"""
     chart_name = luigi.Parameter(default="topselling_free")
     length = luigi.IntParameter(default=100)
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
     datehour = luigi.DateHourParameter(default=datetime.datetime.now())
 
     def requires(self):
@@ -73,7 +73,7 @@ class ProcessAndroidData(BaseTask):
 
 class FindIosData(BaseTask):
     url = luigi.Parameter()
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
 
     def output(self):
         # Ensure the 'output' directory exists
@@ -95,7 +95,7 @@ class FindIosData(BaseTask):
 
 class ProcessIosData(BaseTask):
     url = luigi.Parameter()
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
 
     def requires(self):
         return FindIosData(url=self.url, DRYRUN = self.DRYRUN)
@@ -115,21 +115,22 @@ class ProcessIosData(BaseTask):
         self.logger.info(f"Successfully crawled and stored iOS apps.")
 
 class RunAllAndroidTasks(luigi.WrapperTask):
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
     def requires(self):
         yield ProcessAndroidData(chart_name="topselling_free", length=100, DRYRUN = self.DRYRUN)
         yield ProcessAndroidData(chart_name="topgrossing", length=100, DRYRUN = self.DRYRUN)
         yield ProcessAndroidData(chart_name="topselling_paid", length=100, DRYRUN = self.DRYRUN)
 
 class RunAllIosTasks(luigi.WrapperTask):
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
     def requires(self):
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-free-apps/36", DRYRUN = self.DRYRUN)
         yield ProcessIosData(url="https://apps.apple.com/vn/charts/iphone/top-paid-apps/36", DRYRUN = self.DRYRUN)
         
 class RunAllTasks(luigi.WrapperTask):
-    DRYRUN = luigi.BoolParameter(default=True)
+    DRYRUN = luigi.BoolParameter(default=False)
     def requires(self):
+        init_db()
         yield ProcessAndroidData(chart_name="topselling_free", length=100, DRYRUN = self.DRYRUN)
         yield ProcessAndroidData(chart_name="topgrossing", length=100, DRYRUN = self.DRYRUN)
         yield ProcessAndroidData(chart_name="topselling_paid", length=100, DRYRUN = self.DRYRUN)

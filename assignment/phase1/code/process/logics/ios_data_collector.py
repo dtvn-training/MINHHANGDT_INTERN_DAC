@@ -15,8 +15,8 @@ class IosDataCollector:
         """
         for index, row in df_ids.iterrows():
             url = row['link']
-            if index == 1:
-                print('IMG LINKS: ', row['img_links'])
+            # if index == 1:
+            #     print('IMG LINKS: ', row['img_links'])
 
             resp = requests.get(url, allow_redirects=False)
             resp.encoding = 'utf-8'
